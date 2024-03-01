@@ -3,25 +3,32 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 
 const Contactus = () => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [companyDomain, setCompanyDomain] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState({
+    username: "",
+    phone: "",
+    email: "",
+    companyDomain: "",
+    companyName: "",
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  let name, value;
+  const postUserData = (event) => {
+    name = event.target.name;
+    value = event.target.value;
+    setUserData({ ...userData, [name]: value });
+  };
 
-    // Check if any field is empty
+  //Connect with Firebase
+  const submitData = async (event) => {
+    event.preventDefault();
 
+    const { username, phone, email, companyDomain, companyName } = userData;
     if (
-      username.trim() === "" ||
-      email.trim() === "" ||
-      phone.trim() === "" ||
-      companyName.trim() === "" ||
-      companyDomain.trim() === ""
+      userData.username.trim() === "" ||
+      userData.email.trim() === "" ||
+      userData.phone.trim() === "" ||
+      userData.companyName.trim() === "" ||
+      userData.companyDomain.trim() === ""
     ) {
       Swal.fire({
         title: "Error",
@@ -31,44 +38,40 @@ const Contactus = () => {
       });
       return;
     }
-
-    try {
-      const response = await fetch("http://localhost:5000/submitContactForm", {
+    const res = await fetch(
+      "https://landingpage-2ba6a-default-rtdb.firebaseio.com/contactDataRecords.json",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           username,
-          email,
           phone,
-          companyName,
+          email,
           companyDomain,
+          companyName,
         }),
-      });
-
-      const data = await response.json();
-      if (data.message === "Successfully Submitted Contact details") {
-        Swal.fire({
-          title: "Success",
-          text: data.message,
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-      } else {
-        Swal.fire({
-          title: "Error",
-          text: data.message,
-          icon: "error",
-          confirmButtonText: "OK",
-        });
       }
-
-      // You can handle the response here and provide feedback to the user
-    } catch (error) {
+    );
+    if (res) {
+      setUserData({
+        username: "",
+        phone: "",
+        email: "",
+        companyDomain: "",
+        companyName: "",
+      });
+      Swal.fire({
+        title: "Success",
+        text: "Data Submitted Successfully",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+    } else {
       Swal.fire({
         title: "Error",
-        text: error,
+        text: "Error Submitting Form",
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -92,19 +95,17 @@ const Contactus = () => {
         <br />
         <br />
         <div className="flex-co">
-          <form onSubmit={handleSubmit}>
+          <form method="POST">
             <div className="form1">
               <p className="formcontent">Name</p>
               <br />
               <input
                 type="text"
                 placeholder="Enter name here"
-                n
-                ame=""
+                name="username"
                 id=""
-                value={username}
-                disabled={loading}
-                onChange={(e) => setUsername(e.target.value)}
+                value={userData.username}
+                onChange={postUserData}
               />
               <br />
 
@@ -114,11 +115,10 @@ const Contactus = () => {
                 className=""
                 type="text"
                 placeholder="Your Email"
-                name=""
+                name="email"
                 id=""
-                value={email}
-                disabled={loading}
-                onChange={(e) => setEmail(e.target.value)}
+                value={userData.email}
+                onChange={postUserData}
               />
               <br />
 
@@ -128,11 +128,10 @@ const Contactus = () => {
                 type="number"
                 className=""
                 placeholder="Your Phone number"
-                name=""
+                name="phone"
                 id=""
-                value={phone}
-                disabled={loading}
-                onChange={(e) => setPhone(e.target.value)}
+                value={userData.phone}
+                onChange={postUserData}
               />
               <br />
 
@@ -142,11 +141,10 @@ const Contactus = () => {
                 type="text"
                 className=""
                 placeholder="Enter your Company name"
-                name=""
+                name="companyName"
                 id=""
-                value={companyName}
-                disabled={loading}
-                onChange={(e) => setCompanyName(e.target.value)}
+                value={userData.companyName}
+                onChange={postUserData}
               />
               <br />
 
@@ -156,17 +154,21 @@ const Contactus = () => {
                 type="text"
                 className=""
                 placeholder="Business Category"
-                name=""
+                name="companyDomain"
                 id=""
-                value={companyDomain}
-                disabled={loading}
-                onChange={(e) => setCompanyDomain(e.target.value)}
+                value={userData.companyDomain}
+                onChange={postUserData}
               />
               <br />
 
               <div className="flex-co">
                 <div className="submit-div">
-                  <input className="btn-submit" type="submit" value="Submit" />
+                  <input
+                    className="btn-submit"
+                    type="submit"
+                    value="Submit"
+                    onClick={submitData}
+                  />
                   <br />
                 </div>
               </div>
